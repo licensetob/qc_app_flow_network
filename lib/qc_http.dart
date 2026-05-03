@@ -377,11 +377,18 @@ class QcHttp {
 
   /// 判断业务是否成功
   bool _isBusinessSuccess(QcResponse response) {
-    // 这里假设业务成功的判断标准是状态码为200且data中包含success为true
-    // 实际项目中请根据后端返回格式调整
     if (response.statusCode == 200) {
       if (response.data is Map) {
-        return response.data['success'] == true;
+        final data = response.data as Map;
+        final code = data['Code'] ?? data['code'];
+        final success = data['Success'] ?? data['success'];
+
+        if (code != null) {
+          return code == 200;
+        }
+        if (success != null) {
+          return success == true;
+        }
       }
       return true;
     }
@@ -390,18 +397,24 @@ class QcHttp {
 
   /// 获取业务错误信息
   String _getBusinessErrorMessage(QcResponse response) {
-    // 实际项目中请根据后端返回格式调整
     if (response.data is Map) {
-      return response.data['message'] ?? '业务处理失败';
+      final data = response.data as Map;
+      return data['Msg'] ??
+          data['msg'] ??
+          data['Message'] ??
+          data['message'] ??
+          '业务处理失败';
     }
     return '业务处理失败';
   }
 
   /// 获取业务错误码
   int _getBusinessErrorCode(QcResponse response) {
-    // 实际项目中请根据后端返回格式调整
     if (response.data is Map) {
-      return response.data['code'] ?? -1;
+      final data = response.data as Map;
+      final code = data['Code'] ?? data['code'];
+      if (code is int) return code;
+      return -1;
     }
     return -1;
   }
